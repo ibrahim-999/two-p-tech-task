@@ -40,4 +40,19 @@ class Cart extends Model
     {
         $this->items()->delete();
     }
+
+    public function isEmpty(): bool
+    {
+        return $this->items->isEmpty();
+    }
+
+    public function hasItem($productId): bool
+    {
+        return $this->items()->where('product_id', $productId)->exists();
+    }
+
+    public function getItem($productId)
+    {
+        return $this->items()->where('product_id', $productId)->first();
+    }
 }

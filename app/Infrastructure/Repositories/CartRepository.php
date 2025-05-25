@@ -5,18 +5,22 @@ namespace App\Infrastructure\Repositories;
 use App\Domains\Cart\Models\Cart;
 use App\Domains\Cart\Models\CartItem;
 use App\Domains\Cart\Repositories\CartRepositoryInterface;
+use App\Domains\User\Models\User;
 use Illuminate\Support\Facades\DB;
 
 class CartRepository implements CartRepositoryInterface
 {
+    public function __construct(protected Cart $model)
+    {
+    }
     public function findByUserId($userId)
     {
-        return Cart::with(['items.product'])->where('user_id', $userId)->first();
+        return $this->model->with(['items.product'])->where('user_id', $userId)->first();
     }
 
     public function create(array $data)
     {
-        return Cart::create($data);
+        return $this->model->create($data);
     }
 
     public function addItem($cartId, array $itemData)
@@ -46,11 +50,7 @@ class CartRepository implements CartRepositoryInterface
             $item = CartItem::where('cart_id', $cartId)
                 ->where('product_id', $productId)
                 ->lockForUpdate()
-                ->first();
-
-            if (!$item) {
-                throw new \Exception('Cart item not found');
-            }
+                ->firstOrFail();
 
             $item->update(['quantity' => $quantity]);
             return $item->fresh();
@@ -67,5 +67,20 @@ class CartRepository implements CartRepositoryInterface
     public function clearCart($cartId)
     {
         return CartItem::where('cart_id', $cartId)->delete();
+    }
+
+    public function getItemCount($cartId): int
+    {
+        return CartItem::where('cart_id', $cartId)->sum('quantity');
+    }
+
+    public function getTotalAmount($cartId): float
+    {
+        return CartItem::where('cart_id', $cartId)
+            ->with('product')
+            ->get()
+            ->sum(function ($item) {
+                return $item->quantity * $item->product->price;
+            });
     }
 }
