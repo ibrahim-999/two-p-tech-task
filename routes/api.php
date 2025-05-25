@@ -2,7 +2,6 @@
 use App\Http\Controllers\Api\v1\AuthController;
 use App\Http\Controllers\Api\v1\CartController;
 use App\Http\Controllers\Api\v1\CheckoutController;
-use App\Http\Controllers\Api\v1\OrderController;
 use App\Http\Controllers\Api\v1\ProductController;
 use Illuminate\Support\Facades\Route;
 
