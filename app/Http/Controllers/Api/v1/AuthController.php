@@ -5,6 +5,7 @@ use App\Application\User\LoginUseCase;
 use App\Application\User\LogoutUseCase;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\LoginRequest;
+use App\Http\Resources\User\AuthUserResource;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,9 +14,10 @@ class AuthController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __construct(protected LoginUseCase $loginUseCase, protected LogoutUseCase $logoutUseCase)
-    {
-    }
+    public function __construct(
+        protected LoginUseCase $loginUseCase,
+        protected LogoutUseCase $logoutUseCase
+    ) {}
 
     public function login(LoginRequest $request)
     {
@@ -25,9 +27,12 @@ class AuthController extends Controller
                 $request->password
             );
 
+            $userWithRelations = $result['user']->load(['cart', 'orders']);
+
             return $this->successResponse([
-                'user' => $result['user'],
-                'token' => $result['token']
+                'user' => new AuthUserResource($userWithRelations),
+                'token' => $result['token'],
+                'token_type' => 'Bearer'
             ], 'Login successful');
 
         } catch (\Exception $e) {
@@ -63,6 +68,39 @@ class AuthController extends Controller
 
     public function me(Request $request)
     {
-        return $this->successResponse(Auth::user(), 'User profile retrieved');
+        $user = Auth::user();
+
+        $includeRelations = [];
+        if ($request->get('include_cart')) {
+            $includeRelations[] = 'cart';
+        }
+        if ($request->get('include_orders')) {
+            $includeRelations[] = 'orders';
+        }
+
+        if (!empty($includeRelations)) {
+            $user->load($includeRelations);
+        }
+
+        return $this->successResponse(
+            new AuthUserResource($user),
+            'User profile retrieved'
+        );
+    }
+
+    public function refresh(Request $request)
+    {
+        $user = Auth::user();
+
+        if (method_exists(app('App\Domains\User\Repositories\UserRepositoryInterface'), 'clearUserCache')) {
+            app('App\Domains\User\Repositories\UserRepositoryInterface')->clearUserCache($user->id);
+        }
+
+        $freshUser = $user->fresh(['cart', 'orders']);
+
+        return $this->successResponse(
+            new AuthUserResource($freshUser),
+            'User data refreshed'
+        );
     }
 }
