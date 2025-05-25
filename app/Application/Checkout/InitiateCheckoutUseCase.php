@@ -4,15 +4,16 @@ namespace App\Application\Checkout;
 
 use App\Domains\Cart\Services\CartService;
 use App\Domains\Order\Models\Order;
-use App\Domains\Order\Repositories\OrderRepositoryInterface;
-use App\Domains\Payment\Factory\PaymentGatewayFactory;
+use App\Domains\Order\Services\OrderService;
+use App\Domains\Payment\Services\PaymentService;
 use Illuminate\Support\Facades\DB;
 
 class InitiateCheckoutUseCase
 {
     public function __construct(
         private CartService $cartService,
-        private OrderRepositoryInterface $orderRepository,
+        private OrderService $orderService,
+        private PaymentService $paymentService,
         private ValidateStockUseCase $validateStockUseCase
     ) {}
 
@@ -22,53 +23,18 @@ class InitiateCheckoutUseCase
             $this->validateStockUseCase->execute($userId);
 
             $cart = $this->cartService->getCartContents($userId);
+            $orderData = $this->prepareOrderData($userId, $cart);
+            $order = $this->orderService->createOrder($orderData);
 
-            $orderNumber = $this->generateOrderNumber();
-            $totalAmount = $cart->getTotalAmount();
+            $this->orderService->createOrderItems($order, $cart->items);
 
-            $order = $this->orderRepository->create([
-                'user_id' => $userId,
-                'order_number' => $orderNumber,
-                'total_amount' => $totalAmount,
-                'status' => Order::STATUS_PENDING,
-                'payment_gateway' => 'clickpay'
-            ]);
-
-            foreach ($cart->items as $item) {
-                $order->items()->create([
-                    'product_id' => $item->product_id,
-                    'quantity' => $item->quantity,
-                    'price' => $item->product->price,
-                    'product_name' => $item->product->name
-                ]);
-            }
-
-            $paymentGateway = PaymentGatewayFactory::create('clickpay');
-
-            $paymentData = [
-                'amount' => $totalAmount,
-                'currency' => 'EGP',
-                'order_number' => $orderNumber,
-                'description' => "Payment for Order #{$orderNumber}",
-                'customer' => [
-                    'name' => $customerInfo['name'] ?? 'Customer',
-                    'email' => $customerInfo['email'] ?? 'customer@example.com',
-                    'phone' => $customerInfo['phone'] ?? '',
-                    'address' => $customerInfo['address'] ?? '',
-                    'city' => $customerInfo['city'] ?? 'Riyadh',
-                    'country' => $customerInfo['country'] ?? 'SA'
-                ]
-            ];
-
-            $paymentResult = $paymentGateway->createPayment($paymentData);
+            $paymentResult = $this->paymentService->createPayment($order, $customerInfo);
 
             if (!$paymentResult['success']) {
                 throw new \Exception('Failed to create payment: ' . $paymentResult['error']);
             }
 
-            $this->orderRepository->update($order->id, [
-                'payment_reference' => $paymentResult['transaction_reference']
-            ]);
+            $this->orderService->updatePaymentReference($order->id, $paymentResult['transaction_reference']);
 
             return [
                 'order' => $order->fresh(['items']),
@@ -76,6 +42,17 @@ class InitiateCheckoutUseCase
                 'transaction_reference' => $paymentResult['transaction_reference']
             ];
         });
+    }
+
+    private function prepareOrderData($userId, $cart): array
+    {
+        return [
+            'user_id' => $userId,
+            'order_number' => $this->generateOrderNumber(),
+            'total_amount' => $cart->getTotalAmount(),
+            'status' => Order::STATUS_PENDING,
+            'payment_gateway' => 'clickpay'
+        ];
     }
 
     private function generateOrderNumber(): string

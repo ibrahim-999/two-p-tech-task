@@ -22,17 +22,13 @@ Route::prefix('v1')
 
             Route::apiResource('carts', CartController::class);
 
-            Route::controller(OrderController::class)->group(function () {
-                Route::get('orders', 'index');
-                Route::get('orders/{id}', 'show');
-            });
-
             Route::controller(CheckoutController::class)->group(function () {
                 Route::post('checkout', 'initiate');
-                Route::get('checkout/status/{transactionReference}', 'status');
+                Route::get('checkout/status/{transactionReference}', 'checkoutStatus');
+                Route::post('mock-callback', 'mockCallback');
+                Route::post('payments/callback',  'callback');
             });
-
-            Route::post('payments/callback', [CheckoutController::class, 'callback']);
         });
+
 
     });

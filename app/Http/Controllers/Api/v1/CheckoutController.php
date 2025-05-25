@@ -1,13 +1,17 @@
 <?php
-// app/Http/Controllers/Api/v1/CheckoutController.php
 
 namespace App\Http\Controllers\Api\v1;
 
 use App\Http\Controllers\Controller;
 use App\Application\Checkout\InitiateCheckoutUseCase;
 use App\Application\Checkout\CompleteCheckoutUseCase;
+use App\Http\Requests\Checkout\InitiateCheckoutRequest;
+use App\Http\Resources\Order\OrderResource;
+use App\Http\Resources\Order\OrderStatusResource;
+use App\Domains\Order\Services\OrderService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class CheckoutController extends Controller
 {
@@ -15,13 +19,10 @@ class CheckoutController extends Controller
 
     public function __construct(
         private InitiateCheckoutUseCase $initiateCheckoutUseCase,
-        private CompleteCheckoutUseCase $completeCheckoutUseCase
+        private CompleteCheckoutUseCase $completeCheckoutUseCase,
+        private OrderService $orderService
     ) {}
 
-    /**
-     * Initiate Checkout
-     * POST /api/v1/checkout
-     */
     public function initiate(InitiateCheckoutRequest $request)
     {
         try {
@@ -36,17 +37,13 @@ class CheckoutController extends Controller
                 'total_amount' => $result['order']->total_amount,
                 'payment_url' => $result['payment_url'],
                 'transaction_reference' => $result['transaction_reference']
-            ], 'Checkout initiated successfully. Please complete payment.', 201);
+            ], 'Checkout initiated successfully', 201);
 
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage(), 400);
         }
     }
 
-    /**
-     * Payment Callback (called by ClickPay)
-     * POST /api/v1/payments/callback
-     */
     public function callback(Request $request)
     {
         try {
@@ -56,51 +53,98 @@ class CheckoutController extends Controller
                 return $this->errorResponse('Payment reference is required', 400);
             }
 
-            $result = $this->completeCheckoutUseCase->execute($paymentReference);
+            Log::info('Payment callback received', [
+                'tran_ref' => $paymentReference,
+                'request_data' => $request->all()
+            ]);
 
-            if ($result['success']) {
-                return $this->successResponse([
-                    'order' => [
-                        'id' => $result['order']->id,
-                        'order_number' => $result['order']->order_number,
-                        'status' => $result['order']->status,
-                        'total_amount' => $result['order']->total_amount,
-                        'items' => $result['order']->items->map(function ($item) {
-                            return [
-                                'product_name' => $item->product_name,
-                                'quantity' => $item->quantity,
-                                'price' => $item->price,
-                                'total' => $item->quantity * $item->price
-                            ];
-                        })
-                    ]
-                ], $result['message']);
+            $order = $this->orderService->findByPaymentReference($paymentReference);
+            if (!$order) {
+                return $this->errorResponse('Order not found', 404);
             }
 
-            return $this->errorResponse($result['message'], 400);
+            if ($order->status === 'paid') {
+                return $this->successResponse(
+                    new OrderResource($order),
+                    'Payment already completed'
+                );
+            }
+
+            $result = $this->completeCheckoutUseCase->execute($paymentReference);
+
+            return $result['success']
+                ? $this->successResponse(new OrderResource($result['order']), $result['message'])
+                : $this->errorResponse($result['message'], 400);
 
         } catch (\Exception $e) {
-            return $this->errorResponse('Payment processing failed: ' . $e->getMessage(), 500);
+            Log::error('Payment callback error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return $this->errorResponse('Payment processing failed', 500);
         }
     }
 
-    /**
-     * Check Payment Status
-     * GET /api/v1/checkout/status/{transactionReference}
-     */
-    public function status($transactionReference)
+    public function checkoutStatus($transactionReference)
     {
         try {
-            $result = $this->completeCheckoutUseCase->execute($transactionReference);
+            $order = $this->orderService->findByPaymentReference($transactionReference);
 
-            return $this->successResponse([
-                'order' => $result['order'],
-                'payment_status' => $result['order']->status,
-                'success' => $result['success']
-            ], 'Payment status retrieved');
+            if (!$order) {
+                return $this->errorResponse('Order not found', 404);
+            }
+
+            if (in_array($order->status, ['paid', 'cancelled'])) {
+                return $this->successResponse(
+                    new OrderStatusResource($order),
+                    'Payment status retrieved'
+                );
+            }
+
+            try {
+                $result = $this->completeCheckoutUseCase->execute($transactionReference);
+                return $this->successResponse(
+                    new OrderStatusResource($result['order']),
+                    'Payment status retrieved'
+                );
+            } catch (\Exception $e) {
+                Log::warning('ClickPay verification failed', [
+                    'tran_ref' => $transactionReference,
+                    'error' => $e->getMessage()
+                ]);
+
+                return $this->successResponse(
+                    new OrderStatusResource($order),
+                    'Payment status retrieved (verification pending)'
+                );
+            }
 
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to get payment status: ' . $e->getMessage(), 400);
+            return $this->errorResponse('Failed to get payment status', 400);
         }
     }
+
+    public function mockCallback(Request $request)
+    {
+        try {
+            $paymentReference = $request->input('tran_ref');
+            $order = $this->orderService->findByPaymentReference($paymentReference);
+
+            if (!$order) {
+                return $this->errorResponse('Order not found', 404);
+            }
+
+            $this->orderService->updateStatus($order->id, 'paid');
+            $this->orderService->processSuccessfulPayment($order);
+
+            return $this->successResponse(
+                new OrderResource($order->fresh(['items'])),
+                'Payment completed successfully (MOCK)'
+            );
+
+        } catch (\Exception $e) {
+            return $this->errorResponse('Mock payment failed', 500);
+        }
+    }
+
 }
