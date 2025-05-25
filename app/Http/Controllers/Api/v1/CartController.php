@@ -30,19 +30,6 @@ class CartController extends Controller
         private CartService $cartService
     ) {}
 
-    public function index(Request $request)
-    {
-        try {
-            $cart = $this->getCartUseCase->execute($request->user()->id);
-            return $this->successResponse(
-                new CartResource($cart),
-                'Cart retrieved successfully'
-            );
-        } catch (\Exception $e) {
-            return $this->errorResponse('Failed to retrieve cart', 500);
-        }
-    }
-
     public function store(AddToCartRequest $request)
     {
         try {
@@ -69,7 +56,6 @@ class CartController extends Controller
             return $this->errorResponse($e->getMessage(), 400);
         }
     }
-
     public function update(UpdateCartItemRequest $request, $productId)
     {
         try {
@@ -95,7 +81,6 @@ class CartController extends Controller
             return $this->errorResponse($e->getMessage(), 400);
         }
     }
-
     public function destroy(Request $request, $productId)
     {
         try {
@@ -111,24 +96,7 @@ class CartController extends Controller
             return $this->errorResponse($e->getMessage(), 400);
         }
     }
-
-    public function clear(Request $request)
-    {
-        try {
-            $this->clearCartUseCase->execute($request->user()->id);
-
-            $cartSummary = $this->cartService->getCartSummary($request->user()->id);
-
-            return $this->successResponse(
-                new CartSummaryResource($cartSummary),
-                'Cart cleared successfully'
-            );
-        } catch (\Exception $e) {
-            return $this->errorResponse('Failed to clear cart', 500);
-        }
-    }
-
-    public function summary(Request $request)
+    public function show(Request $request)
     {
         try {
             $cartSummary = $this->cartService->getCartSummary($request->user()->id);
