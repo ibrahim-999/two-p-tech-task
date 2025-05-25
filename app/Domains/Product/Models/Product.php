@@ -2,12 +2,15 @@
 
 namespace App\Domains\Product\Models;
 
+use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Product extends Model
 {
     use HasFactory;
+    protected static $factory = ProductFactory::class;
+
 
     protected $fillable = [
         'name',
