@@ -8,9 +8,9 @@ use App\Application\Cart\UpdateCartItemUseCase;
 use App\Application\Cart\RemoveFromCartUseCase;
 use App\Application\Cart\GetCartUseCase;
 use App\Application\Cart\ClearCartUseCase;
+use App\Http\Requests\Cart\AddToCartRequest;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
-use App\Http\Requests\AddToCartRequest;
 use App\Http\Requests\UpdateCartItemRequest;
 
 class CartController extends Controller
