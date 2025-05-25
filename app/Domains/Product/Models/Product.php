@@ -1,0 +1,34 @@
+<?php
+
+namespace App\Domains\Product\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
+class Product extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'name',
+        'description',
+        'price',
+        'stock_quantity',
+        'is_active'
+    ];
+
+    protected $casts = [
+        'price' => 'decimal:2',
+        'is_active' => 'boolean'
+    ];
+
+    public function isInStock(int $quantity = 1): bool
+    {
+        return $this->stock_quantity >= $quantity;
+    }
+
+    public function reduceStock(int $quantity): void
+    {
+        $this->decrement('stock_quantity', $quantity);
+    }
+}
