@@ -13,7 +13,6 @@ class GetCartUseCase
     public function execute($userId)
     {
         $cart = $this->cartService->getCartContents($userId);
-
         return [
             'cart_id' => $cart->id,
             'user_id' => $cart->user_id,
@@ -31,8 +30,6 @@ class GetCartUseCase
                     'stock_available' => $item->product->stock_quantity
                 ];
             }),
-            'created_at' => $cart->created_at,
-            'updated_at' => $cart->updated_at
         ];
     }
 }

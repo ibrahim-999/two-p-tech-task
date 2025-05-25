@@ -16,8 +16,6 @@ class CartResource extends JsonResource
             'total_amount' => $this->getTotalAmount(),
             'is_empty' => $this->items->isEmpty(),
             'items' => CartItemResource::collection($this->whenLoaded('items')),
-            'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
-            'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];
     }
 }
