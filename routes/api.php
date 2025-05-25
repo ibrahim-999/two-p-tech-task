@@ -27,6 +27,7 @@ Route::prefix('v1')
                 Route::get('checkout/status/{transactionReference}', 'checkoutStatus');
                 Route::post('mock-callback', 'mockCallback');
                 Route::post('payments/callback',  'callback');
+                Route::post('reset-order',  'resetOrder');
             });
         });
 
