@@ -1,7 +1,8 @@
 <?php
-
+// Fix: app/Domains/Cart/Models/CartItem.php - Correct Product namespace
 namespace App\Domains\Cart\Models;
 
+use App\Domains\Product\Models\Product;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -23,6 +24,6 @@ class CartItem extends Model
 
     public function product(): BelongsTo
     {
-        return $this->belongsTo(\App\Domain\Product\Models\Product::class);
+        return $this->belongsTo(Product::class);
     }
 }

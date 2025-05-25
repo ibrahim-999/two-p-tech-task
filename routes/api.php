@@ -1,5 +1,6 @@
 <?php
 use App\Http\Controllers\Api\v1\AuthController;
+use App\Http\Controllers\Api\v1\CartController;
 use App\Http\Controllers\Api\v1\ProductController;
 use Illuminate\Support\Facades\Route;
 
@@ -16,7 +17,8 @@ Route::prefix('v1')
                 Route::get('products',  'index');
                 Route::get('products/{id}', 'show');
             });
+
+            Route::apiResource('carts', CartController::class);
+
         });
-
-
     });
