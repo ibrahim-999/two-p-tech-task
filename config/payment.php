@@ -2,11 +2,11 @@
 
 return [
     'clickpay' => [
-        'profile_id' => env('CLICKPAY_PROFILE_ID', '46314'),
-        'server_key' => env('CLICKPAY_SERVER_KEY', 'SDJNM66MRT-JKZNJBZLNL-GHMK6LLH96'),
-        'client_key' => env('CLICKPAY_CLIENT_KEY', 'CQKMT7-9PP96K-9Q629B-QH7GNP'),
-        'is_live' => env('CLICKPAY_IS_LIVE', false),
-        'base_url' => env('CLICKPAY_BASE_URL', 'https://secure.clickpay.com.sa'),
+        'profile_id' => env('CLICKPAY_PROFILE_ID'),
+        'server_key' => env('CLICKPAY_SERVER_KEY'),
+        'client_key' => env('CLICKPAY_CLIENT_KEY'),
+        'is_live' => env('CLICKPAY_IS_LIVE'),
+        'base_url' => env('CLICKPAY_BASE_URL'),
     ],
 
     'default_gateway' => env('DEFAULT_PAYMENT_GATEWAY', 'clickpay'),
