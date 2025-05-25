@@ -1,6 +1,7 @@
 <?php
 
-namespace Tests\Feature\Http\Controllers\Api\v1;
+namespace Tests\Unit\Http\Controllers\Api\v1;
+
 
 use App\Domains\Cart\Models\Cart;
 use App\Domains\Product\Models\Product;
@@ -10,7 +11,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-class CartControllerIntegrationTest extends TestCase
+class CartControllerTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
@@ -527,3 +528,4 @@ class CartControllerIntegrationTest extends TestCase
         ]);
     }
 }
+
