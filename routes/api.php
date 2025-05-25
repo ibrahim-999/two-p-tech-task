@@ -1,5 +1,6 @@
 <?php
 use App\Http\Controllers\Api\v1\AuthController;
+use App\Http\Controllers\Api\v1\ProductController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')
@@ -10,5 +11,12 @@ Route::prefix('v1')
             Route::post('logout', 'logout');
             Route::post('logout-current', 'logoutCurrentToken');
             Route::get('me', 'me');
+
+            Route::controller(ProductController::class)->group(function () {
+                Route::get('products',  'index');
+                Route::get('products/{id}', 'show');
+            });
         });
+
+
     });
