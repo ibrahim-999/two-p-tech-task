@@ -2,15 +2,13 @@
 
 namespace App\Infrastructure\Repositories;
 
-use App\Domains\Cart\Models\Cart;
 use App\Domains\Order\Models\Order;
 use App\Domains\Order\Repositories\OrderRepositoryInterface;
 
 class OrderRepository implements OrderRepositoryInterface
 {
-    public function __construct(protected Order $model)
-    {
-    }
+    public function __construct(protected Order $model) {}
+
     public function create(array $data)
     {
         return $this->model->create($data);
@@ -40,6 +38,7 @@ class OrderRepository implements OrderRepositoryInterface
     {
         $order = $this->model->findOrFail($id);
         $order->update($data);
+
         return $order->fresh();
     }
 }

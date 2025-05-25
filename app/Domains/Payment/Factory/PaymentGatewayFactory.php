@@ -8,12 +8,12 @@ use InvalidArgumentException;
 
 class PaymentGatewayFactory
 {
-    public static function create(string $gateway = null): PaymentGatewayInterface
+    public static function create(?string $gateway = null): PaymentGatewayInterface
     {
         $gateway = $gateway ?? config('payment.default_gateway');
 
         return match (strtolower($gateway)) {
-            'clickpay' => new ClickPayGateway(),
+            'clickpay' => new ClickPayGateway,
             default => throw new InvalidArgumentException("Unsupported payment gateway: {$gateway}")
         };
     }
@@ -23,4 +23,3 @@ class PaymentGatewayFactory
         return ['clickpay'];
     }
 }
-

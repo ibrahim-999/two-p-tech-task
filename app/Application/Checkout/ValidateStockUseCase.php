@@ -25,18 +25,18 @@ class ValidateStockUseCase
         foreach ($cart->items as $item) {
             $product = $this->productRepository->findOrFail($item->product_id);
 
-            if (!$product->isInStock($item->quantity)) {
+            if (! $product->isInStock($item->quantity)) {
                 $stockIssues[] = [
                     'product_id' => $product->id,
                     'product_name' => $product->name,
                     'requested_quantity' => $item->quantity,
-                    'available_quantity' => $product->stock_quantity
+                    'available_quantity' => $product->stock_quantity,
                 ];
             }
         }
 
-        if (!empty($stockIssues)) {
-            throw new \Exception('Stock validation failed: ' . json_encode($stockIssues));
+        if (! empty($stockIssues)) {
+            throw new \Exception('Stock validation failed: '.json_encode($stockIssues));
         }
 
         return true;

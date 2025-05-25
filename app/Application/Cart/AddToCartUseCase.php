@@ -2,7 +2,6 @@
 
 namespace App\Application\Cart;
 
-
 use App\Domains\Cart\Services\CartService;
 
 class AddToCartUseCase

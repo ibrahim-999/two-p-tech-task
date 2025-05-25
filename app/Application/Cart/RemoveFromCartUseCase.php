@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Application\Cart;
 
 use App\Domains\Cart\Services\CartService;

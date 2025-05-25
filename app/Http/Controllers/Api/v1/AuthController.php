@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api\v1;
 
 use App\Application\User\LoginUseCase;
@@ -32,11 +33,11 @@ class AuthController extends Controller
             return $this->successResponse([
                 'user' => new AuthUserResource($userWithRelations),
                 'token' => $result['token'],
-                'token_type' => 'Bearer'
+                'token_type' => 'Bearer',
             ], 'Login successful');
 
         } catch (\Exception $e) {
-            return $this->errorResponse('Login failed: ' . $e->getMessage(), 401);
+            return $this->errorResponse('Login failed: '.$e->getMessage(), 401);
         }
     }
 
@@ -49,7 +50,7 @@ class AuthController extends Controller
             return $this->successResponse(null, 'Logout successful');
 
         } catch (\Exception $e) {
-            return $this->errorResponse('Logout failed: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Logout failed: '.$e->getMessage(), 500);
         }
     }
 
@@ -62,7 +63,7 @@ class AuthController extends Controller
             return $this->successResponse(null, 'Logout from current device successful');
 
         } catch (\Exception $e) {
-            return $this->errorResponse('Logout failed: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Logout failed: '.$e->getMessage(), 500);
         }
     }
 
@@ -78,7 +79,7 @@ class AuthController extends Controller
             $includeRelations[] = 'orders';
         }
 
-        if (!empty($includeRelations)) {
+        if (! empty($includeRelations)) {
             $user->load($includeRelations);
         }
 

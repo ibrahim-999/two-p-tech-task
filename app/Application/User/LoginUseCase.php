@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Application\User;
 
 use App\Domains\User\Services\UserService;
@@ -16,7 +17,7 @@ class LoginUseCase
     {
         $user = $this->userService->validateCredentials($email, $password);
 
-        if (!$user) {
+        if (! $user) {
             throw new \Exception('Invalid credentials');
         }
 
@@ -24,7 +25,7 @@ class LoginUseCase
 
         return [
             'user' => $user,
-            'token' => $token
+            'token' => $token,
         ];
     }
 }

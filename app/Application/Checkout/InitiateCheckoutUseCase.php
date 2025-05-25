@@ -30,8 +30,8 @@ class InitiateCheckoutUseCase
 
             $paymentResult = $this->paymentService->createPayment($order, $customerInfo);
 
-            if (!$paymentResult['success']) {
-                throw new \Exception('Failed to create payment: ' . $paymentResult['error']);
+            if (! $paymentResult['success']) {
+                throw new \Exception('Failed to create payment: '.$paymentResult['error']);
             }
 
             $this->orderService->updatePaymentReference($order->id, $paymentResult['transaction_reference']);
@@ -39,7 +39,7 @@ class InitiateCheckoutUseCase
             return [
                 'order' => $order->fresh(['items']),
                 'payment_url' => $paymentResult['payment_url'],
-                'transaction_reference' => $paymentResult['transaction_reference']
+                'transaction_reference' => $paymentResult['transaction_reference'],
             ];
         });
     }
@@ -51,12 +51,12 @@ class InitiateCheckoutUseCase
             'order_number' => $this->generateOrderNumber(),
             'total_amount' => $cart->getTotalAmount(),
             'status' => Order::STATUS_PENDING,
-            'payment_gateway' => 'clickpay'
+            'payment_gateway' => 'clickpay',
         ];
     }
 
     private function generateOrderNumber(): string
     {
-        return 'ORD-' . date('Ymd') . '-' . strtoupper(uniqid());
+        return 'ORD-'.date('Ymd').'-'.strtoupper(uniqid());
     }
 }

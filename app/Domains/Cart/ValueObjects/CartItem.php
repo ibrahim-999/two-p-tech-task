@@ -23,7 +23,7 @@ class CartItem
             'quantity' => $this->quantity,
             'price' => $this->price,
             'product_name' => $this->productName,
-            'total_price' => $this->getTotalPrice()
+            'total_price' => $this->getTotalPrice(),
         ];
     }
 }

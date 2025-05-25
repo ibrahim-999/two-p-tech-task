@@ -5,14 +5,12 @@ namespace App\Infrastructure\Repositories;
 use App\Domains\Cart\Models\Cart;
 use App\Domains\Cart\Models\CartItem;
 use App\Domains\Cart\Repositories\CartRepositoryInterface;
-use App\Domains\User\Models\User;
 use Illuminate\Support\Facades\DB;
 
 class CartRepository implements CartRepositoryInterface
 {
-    public function __construct(protected Cart $model)
-    {
-    }
+    public function __construct(protected Cart $model) {}
+
     public function findByUserId($userId)
     {
         return $this->model->with(['items.product'])->where('user_id', $userId)->first();
@@ -33,13 +31,14 @@ class CartRepository implements CartRepositoryInterface
 
             if ($existingItem) {
                 $existingItem->increment('quantity', $itemData['quantity']);
+
                 return $existingItem->fresh();
             }
 
             return CartItem::create([
                 'cart_id' => $cartId,
                 'product_id' => $itemData['product_id'],
-                'quantity' => $itemData['quantity']
+                'quantity' => $itemData['quantity'],
             ]);
         });
     }
@@ -53,6 +52,7 @@ class CartRepository implements CartRepositoryInterface
                 ->firstOrFail();
 
             $item->update(['quantity' => $quantity]);
+
             return $item->fresh();
         });
     }

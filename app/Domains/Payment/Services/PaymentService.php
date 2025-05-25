@@ -21,12 +21,14 @@ class PaymentService
     public function verifyPayment(string $paymentReference): array
     {
         $gateway = $this->paymentGatewayFactory::create('clickpay');
+
         return $gateway->verifyPayment($paymentReference);
     }
 
     public function getPaymentStatus(string $paymentReference): string
     {
         $gateway = $this->paymentGatewayFactory::create('clickpay');
+
         return $gateway->getPaymentStatus($paymentReference);
     }
 
@@ -38,7 +40,7 @@ class PaymentService
             'order_number' => $order->order_number,
             'description' => "Payment for Order #{$order->order_number}",
             'customer' => $this->buildCustomerData($customerInfo),
-            'shipping' => $this->buildShippingData($customerInfo)
+            'shipping' => $this->buildShippingData($customerInfo),
         ];
     }
 
@@ -52,7 +54,7 @@ class PaymentService
             'city' => $customerInfo['city'] ?? 'cairo',
             'state' => $customerInfo['state'] ?? 'cairo',
             'country' => $customerInfo['country'] ?? 'EG',
-            'zip' => $customerInfo['zip'] ?? '12345'
+            'zip' => $customerInfo['zip'] ?? '12345',
         ];
     }
 
@@ -66,7 +68,7 @@ class PaymentService
             'city' => $customerInfo['shipping_city'] ?? $customerInfo['city'] ?? 'cairo',
             'state' => $customerInfo['shipping_state'] ?? $customerInfo['state'] ?? 'cairo',
             'country' => $customerInfo['shipping_country'] ?? $customerInfo['country'] ?? 'EG',
-            'zip' => $customerInfo['shipping_zip'] ?? $customerInfo['zip'] ?? '12345'
+            'zip' => $customerInfo['shipping_zip'] ?? $customerInfo['zip'] ?? '12345',
         ];
     }
 }

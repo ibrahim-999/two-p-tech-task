@@ -5,17 +5,19 @@ namespace App\Domains\User\Models;
 use App\Domains\Cart\Models\Cart;
 use App\Domains\Order\Models\Order;
 use Database\Factories\UserFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
+
     protected static $factory = UserFactory::class;
+
     protected $fillable = [
         'name',
         'email',
@@ -31,7 +33,6 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
-
 
     public function cart(): HasOne
     {
@@ -70,7 +71,7 @@ class User extends Authenticatable
 
     public function hasVerifiedEmail(): bool
     {
-        return !is_null($this->email_verified_at);
+        return ! is_null($this->email_verified_at);
     }
 
     public function getMemberSinceAttribute(): string

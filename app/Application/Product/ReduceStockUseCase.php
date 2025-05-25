@@ -21,7 +21,7 @@ class ReduceStockUseCase
                 ->lockForUpdate()
                 ->first();
 
-            if (!$product) {
+            if (! $product) {
                 throw new \Exception('Product not found');
             }
 
@@ -37,4 +37,3 @@ class ReduceStockUseCase
         });
     }
 }
-

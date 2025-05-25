@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Application\User;
 
 use App\Domains\User\Services\UserService;

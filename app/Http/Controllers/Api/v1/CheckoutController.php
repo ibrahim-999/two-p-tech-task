@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\Api\v1;
 
-use App\Http\Controllers\Controller;
-use App\Application\Checkout\InitiateCheckoutUseCase;
 use App\Application\Checkout\CompleteCheckoutUseCase;
+use App\Application\Checkout\InitiateCheckoutUseCase;
+use App\Domains\Order\Services\OrderService;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Checkout\InitiateCheckoutRequest;
 use App\Http\Resources\Order\OrderResource;
 use App\Http\Resources\Order\OrderStatusResource;
-use App\Domains\Order\Services\OrderService;
 use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -36,7 +36,7 @@ class CheckoutController extends Controller
                 'order_number' => $result['order']->order_number,
                 'total_amount' => $result['order']->total_amount,
                 'payment_url' => $result['payment_url'],
-                'transaction_reference' => $result['transaction_reference']
+                'transaction_reference' => $result['transaction_reference'],
             ], 'Checkout initiated successfully', 201);
 
         } catch (\Exception $e) {
@@ -49,28 +49,30 @@ class CheckoutController extends Controller
         try {
             $paymentReference = $request->input('tran_ref');
 
-            if (!$paymentReference) {
+            if (! $paymentReference) {
                 return $this->errorResponse('Payment reference is required', 400);
             }
 
             Log::info('Payment callback received', [
                 'tran_ref' => $paymentReference,
-                'request_data' => $request->all()
+                'request_data' => $request->all(),
             ]);
 
             $order = $this->orderService->findByPaymentReference($paymentReference);
-            if (!$order) {
+            if (! $order) {
                 Log::error('Order not found for payment reference', [
-                    'tran_ref' => $paymentReference
+                    'tran_ref' => $paymentReference,
                 ]);
+
                 return $this->errorResponse('Order not found', 404);
             }
 
             if ($order->status === 'paid') {
                 Log::info('Order already paid', [
                     'order_id' => $order->id,
-                    'tran_ref' => $paymentReference
+                    'tran_ref' => $paymentReference,
                 ]);
+
                 return $this->successResponse(
                     new OrderResource($order),
                     'Payment already completed'
@@ -83,7 +85,7 @@ class CheckoutController extends Controller
                 if ($result['success']) {
                     Log::info('Payment completed successfully', [
                         'order_id' => $result['order']->id,
-                        'tran_ref' => $paymentReference
+                        'tran_ref' => $paymentReference,
                     ]);
 
                     return $this->successResponse(
@@ -94,7 +96,7 @@ class CheckoutController extends Controller
                     Log::warning('Payment not completed', [
                         'order_id' => $order->id,
                         'status' => $result['status'] ?? 'unknown',
-                        'message' => $result['message']
+                        'message' => $result['message'],
                     ]);
 
                     return $this->errorResponse($result['message'], 400);
@@ -105,11 +107,11 @@ class CheckoutController extends Controller
                     'tran_ref' => $paymentReference,
                     'order_id' => $order->id,
                     'error' => $verificationError->getMessage(),
-                    'trace' => $verificationError->getTraceAsString()
+                    'trace' => $verificationError->getTraceAsString(),
                 ]);
 
                 return $this->errorResponse(
-                    'Payment verification failed: ' . $verificationError->getMessage(),
+                    'Payment verification failed: '.$verificationError->getMessage(),
                     400
                 );
             }
@@ -118,8 +120,9 @@ class CheckoutController extends Controller
             Log::error('Payment callback error', [
                 'tran_ref' => $paymentReference ?? 'unknown',
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return $this->errorResponse('Payment processing failed', 500);
         }
     }
@@ -129,14 +132,14 @@ class CheckoutController extends Controller
         try {
             $order = $this->orderService->findByPaymentReference($transactionReference);
 
-            if (!$order) {
+            if (! $order) {
                 return $this->errorResponse('Order not found', 404);
             }
 
             Log::info('Checking payment status', [
                 'tran_ref' => $transactionReference,
                 'order_id' => $order->id,
-                'current_status' => $order->status
+                'current_status' => $order->status,
             ]);
 
             if (in_array($order->status, ['paid', 'cancelled'])) {
@@ -148,6 +151,7 @@ class CheckoutController extends Controller
 
             try {
                 $result = $this->completeCheckoutUseCase->execute($transactionReference);
+
                 return $this->successResponse(
                     new OrderStatusResource($result['order']),
                     'Payment status retrieved'
@@ -155,7 +159,7 @@ class CheckoutController extends Controller
             } catch (\Exception $e) {
                 Log::warning('ClickPay verification failed in status check', [
                     'tran_ref' => $transactionReference,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
 
                 return $this->successResponse(
@@ -167,8 +171,9 @@ class CheckoutController extends Controller
         } catch (\Exception $e) {
             Log::error('Status check error', [
                 'tran_ref' => $transactionReference,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return $this->errorResponse('Failed to get payment status', 400);
         }
     }
@@ -178,13 +183,13 @@ class CheckoutController extends Controller
         try {
             $paymentReference = $request->input('tran_ref');
 
-            if (!$paymentReference) {
+            if (! $paymentReference) {
                 return $this->errorResponse('Payment reference is required', 400);
             }
 
             $order = $this->orderService->findByPaymentReference($paymentReference);
 
-            if (!$order) {
+            if (! $order) {
                 return $this->errorResponse('Order not found', 404);
             }
 
@@ -197,7 +202,7 @@ class CheckoutController extends Controller
 
             Log::info('Processing mock payment', [
                 'order_id' => $order->id,
-                'tran_ref' => $paymentReference
+                'tran_ref' => $paymentReference,
             ]);
 
             $this->orderService->updateStatus($order->id, 'paid');
@@ -212,8 +217,9 @@ class CheckoutController extends Controller
         } catch (\Exception $e) {
             Log::error('Mock payment failed', [
                 'tran_ref' => $paymentReference ?? 'unknown',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return $this->errorResponse('Mock payment failed', 500);
         }
     }
@@ -223,13 +229,13 @@ class CheckoutController extends Controller
         try {
             $paymentReference = $request->input('tran_ref');
 
-            if (!$paymentReference) {
+            if (! $paymentReference) {
                 return $this->errorResponse('Payment reference is required', 400);
             }
 
             $order = $this->orderService->findByPaymentReference($paymentReference);
 
-            if (!$order) {
+            if (! $order) {
                 return $this->errorResponse('Order not found', 404);
             }
 
@@ -237,7 +243,7 @@ class CheckoutController extends Controller
 
             Log::info('Order reset to pending', [
                 'order_id' => $order->id,
-                'tran_ref' => $paymentReference
+                'tran_ref' => $paymentReference,
             ]);
 
             return $this->successResponse(

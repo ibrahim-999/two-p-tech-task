@@ -22,8 +22,5 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->bind(OrderRepositoryInterface::class, OrderRepository::class);
     }
 
-    public function boot()
-    {
-    }
-
+    public function boot() {}
 }

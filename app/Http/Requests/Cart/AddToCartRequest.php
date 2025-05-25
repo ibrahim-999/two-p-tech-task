@@ -15,7 +15,7 @@ class AddToCartRequest extends FormRequest
     {
         return [
             'product_id' => 'required|integer|exists:products,id',
-            'quantity' => 'required|integer|min:1|max:100'
+            'quantity' => 'required|integer|min:1|max:100',
         ];
     }
 
@@ -26,7 +26,7 @@ class AddToCartRequest extends FormRequest
             'product_id.exists' => 'Product does not exist',
             'quantity.required' => 'Quantity is required',
             'quantity.min' => 'Quantity must be at least 1',
-            'quantity.max' => 'Quantity cannot exceed 100'
+            'quantity.max' => 'Quantity cannot exceed 100',
         ];
     }
 }

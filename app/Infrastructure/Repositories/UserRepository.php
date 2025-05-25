@@ -67,7 +67,7 @@ class UserRepository implements UserRepositoryInterface
     {
         $user = $this->find($id);
 
-        if (!$user) {
+        if (! $user) {
             throw new ModelNotFoundException(
                 "User with ID {$id} not found"
             );
@@ -117,7 +117,7 @@ class UserRepository implements UserRepositoryInterface
      */
     public function findWithRelations($id, array $relations = [])
     {
-        $cacheKey = "user.{$id}.with." . implode('.', $relations);
+        $cacheKey = "user.{$id}.with.".implode('.', $relations);
 
         return Cache::remember($cacheKey, $this->cacheTtl, function () use ($id, $relations) {
             return $this->model->with($relations)->find($id);

@@ -1,4 +1,5 @@
 <?php
+
 // app/Application/Product/GetProductsUseCase.php
 
 namespace App\Application\Product;

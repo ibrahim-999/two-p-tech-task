@@ -8,9 +8,8 @@ use Illuminate\Support\Facades\Cache;
 
 class ProductRepository implements ProductRepositoryInterface
 {
-    public function __construct(protected Product $model)
-    {
-    }
+    public function __construct(protected Product $model) {}
+
     public function find($id)
     {
         return Cache::remember("product.{$id}", 3600, function () use ($id) {
@@ -41,6 +40,7 @@ class ProductRepository implements ProductRepositoryInterface
     {
         $product = $this->model->create($data);
         Cache::forget('products.all');
+
         return $product;
     }
 
@@ -50,6 +50,7 @@ class ProductRepository implements ProductRepositoryInterface
         $product->update($data);
         Cache::forget("product.{$id}");
         Cache::forget('products.all');
+
         return $product;
     }
 
@@ -59,6 +60,7 @@ class ProductRepository implements ProductRepositoryInterface
         $result = $product->delete();
         Cache::forget("product.{$id}");
         Cache::forget('products.all');
+
         return $result;
     }
 

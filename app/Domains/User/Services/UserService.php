@@ -4,16 +4,14 @@ namespace App\Domains\User\Services;
 
 use App\Domains\User\Repositories\UserRepositoryInterface;
 use App\Traits\CommonServiceCrudTrait;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Hash;
 
 class UserService
 {
     use CommonServiceCrudTrait;
 
-    public function __construct(protected  UserRepositoryInterface $repository)
-    {
-    }
+    public function __construct(protected UserRepositoryInterface $repository) {}
 
     public function findByEmail(string $email)
     {
@@ -24,7 +22,7 @@ class UserService
     {
         $user = $this->findByEmail($email);
 
-        if (!$user || !Hash::check($password, $user->password)) {
+        if (! $user || ! Hash::check($password, $user->password)) {
             return false;
         }
 
@@ -37,7 +35,7 @@ class UserService
     {
         Cache::put("user_profile.{$user->id}", [
             'user' => $user,
-            'cached_at' => now()
+            'cached_at' => now(),
         ], 1800);
     }
 }

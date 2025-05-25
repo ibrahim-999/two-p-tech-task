@@ -1,4 +1,5 @@
 <?php
+
 use App\Http\Controllers\Api\v1\AuthController;
 use App\Http\Controllers\Api\v1\CartController;
 use App\Http\Controllers\Api\v1\CheckoutController;
@@ -15,8 +16,13 @@ Route::prefix('v1')
             Route::get('me', 'me');
 
             Route::controller(ProductController::class)->group(function () {
-                Route::get('products',  'index');
+                Route::get('products', 'index');
                 Route::get('products/{id}', 'show');
+            });
+
+            Route::controller(CartController::class)->group(function () {
+                Route::delete('cart/clear', 'clear');
+                Route::get('cart/summary', 'summary');
             });
 
             Route::apiResource('carts', CartController::class);
@@ -25,10 +31,9 @@ Route::prefix('v1')
                 Route::post('checkout', 'initiate');
                 Route::get('checkout/status/{transactionReference}', 'checkoutStatus');
                 Route::post('mock-callback', 'mockCallback');
-                Route::post('payments/callback',  'callback');
-                Route::post('reset-order',  'resetOrder');
+                Route::post('payments/callback', 'callback');
+                Route::post('reset-order', 'resetOrder');
             });
         });
-
 
     });

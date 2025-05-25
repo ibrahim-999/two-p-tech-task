@@ -12,6 +12,6 @@ return [
     'default_gateway' => env('DEFAULT_PAYMENT_GATEWAY', 'clickpay'),
     'currency' => env('DEFAULT_CURRENCY', 'EGP'),
 
-    'callback_url' => env('APP_URL') . '/api/v1/payments/callback',
-    'return_url' => env('APP_URL') . '/payment/success',
+    'callback_url' => env('APP_URL').'/api/v1/payments/callback',
+    'return_url' => env('APP_URL').'/payment/success',
 ];

@@ -17,7 +17,7 @@ class CartItemActionResource extends JsonResource
             'cart_summary' => [
                 'total_items' => $this->additional['cart_items_count'] ?? 0,
                 'total_amount' => $this->additional['cart_total'] ?? 0,
-            ]
+            ],
         ];
     }
 }

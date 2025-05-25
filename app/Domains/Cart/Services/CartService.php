@@ -20,7 +20,7 @@ class CartService
     {
         $cart = $this->repository->findByUserId($userId);
 
-        if (!$cart) {
+        if (! $cart) {
             $cart = $this->repository->create(['user_id' => $userId]);
         }
 
@@ -35,7 +35,7 @@ class CartService
 
             return $this->repository->addItem($cart->id, [
                 'product_id' => $productId,
-                'quantity' => $quantity
+                'quantity' => $quantity,
             ]);
         });
     }
@@ -53,6 +53,7 @@ class CartService
     public function removeItem($userId, $productId)
     {
         $cart = $this->getOrCreateCart($userId);
+
         return $this->repository->removeItem($cart->id, $productId);
     }
 
@@ -72,6 +73,7 @@ class CartService
     public function clearCart($userId)
     {
         $cart = $this->getOrCreateCart($userId);
+
         return $this->repository->clearCart($cart->id);
     }
 
@@ -83,7 +85,7 @@ class CartService
             'cart_id' => $cart->id,
             'items_count' => $cart->getItemsCount(),
             'total_amount' => $cart->getTotalAmount(),
-            'is_empty' => $cart->items->isEmpty()
+            'is_empty' => $cart->items->isEmpty(),
         ];
     }
 
@@ -94,11 +96,11 @@ class CartService
             ->lockForUpdate()
             ->first();
 
-        if (!$product) {
+        if (! $product) {
             throw new \Exception('Product not found');
         }
 
-        if (!$product->is_active) {
+        if (! $product->is_active) {
             throw new \Exception('Product is not available');
         }
 

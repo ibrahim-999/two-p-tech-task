@@ -13,6 +13,7 @@ class GetCartUseCase
     public function execute($userId)
     {
         $cart = $this->cartService->getCartContents($userId);
+
         return [
             'cart_id' => $cart->id,
             'user_id' => $cart->user_id,
@@ -27,7 +28,7 @@ class GetCartUseCase
                     'unit_price' => $item->product->price,
                     'quantity' => $item->quantity,
                     'total_price' => $item->quantity * $item->product->price,
-                    'stock_available' => $item->product->stock_quantity
+                    'stock_available' => $item->product->stock_quantity,
                 ];
             }),
         ];

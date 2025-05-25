@@ -25,7 +25,7 @@ class OrderService
                 'product_id' => $item->product_id,
                 'quantity' => $item->quantity,
                 'price' => $item->product->price,
-                'product_name' => $item->product->name
+                'product_name' => $item->product->name,
             ]);
         }
     }
@@ -33,14 +33,14 @@ class OrderService
     public function updatePaymentReference($orderId, $paymentReference)
     {
         return $this->repository->update($orderId, [
-            'payment_reference' => $paymentReference
+            'payment_reference' => $paymentReference,
         ]);
     }
 
     public function updateStatus($orderId, $status)
     {
         return $this->repository->update($orderId, [
-            'status' => $status
+            'status' => $status,
         ]);
     }
 
@@ -53,6 +53,7 @@ class OrderService
     {
         return $this->repository->findByUser($userId);
     }
+
     public function processSuccessfulPayment($order): void
     {
         foreach ($order->items as $item) {
@@ -65,5 +66,4 @@ class OrderService
             $order->user->cart->items()->delete();
         }
     }
-
 }

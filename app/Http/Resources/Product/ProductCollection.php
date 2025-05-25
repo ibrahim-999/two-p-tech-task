@@ -30,11 +30,12 @@ class ProductCollection extends ResourceCollection
             ],
         ];
     }
+
     public function with(Request $request): array
     {
         return [
             'message' => 'Products retrieved successfully',
-            'success' => true
+            'success' => true,
         ];
     }
 }

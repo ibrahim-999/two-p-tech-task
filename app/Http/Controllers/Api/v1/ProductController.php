@@ -22,7 +22,7 @@ class ProductController extends Controller
         try {
             $filters = [
                 'per_page' => $request->get('per_page', 15),
-                'paginate' => true
+                'paginate' => true,
             ];
 
             $products = $this->productService->getActiveProducts($filters);
@@ -42,8 +42,8 @@ class ProductController extends Controller
                 'product' => new ProductResource($productData['product']),
                 'stock_info' => [
                     'in_stock' => $productData['in_stock'],
-                    'stock_status' => $productData['stock_status']
-                ]
+                    'stock_status' => $productData['stock_status'],
+                ],
             ], 'Product retrieved successfully');
         } catch (\Exception $e) {
             return $this->errorResponse('Product not found', 404);

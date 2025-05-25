@@ -17,7 +17,7 @@ class PaymentRequest
             'amount' => $this->amount,
             'currency' => $this->currency,
             'order_id' => $this->orderId,
-            'customer_info' => $this->customerInfo
+            'customer_info' => $this->customerInfo,
         ];
     }
 }

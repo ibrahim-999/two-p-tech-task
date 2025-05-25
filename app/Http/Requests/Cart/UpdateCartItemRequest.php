@@ -14,7 +14,7 @@ class UpdateCartItemRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'quantity' => 'required|integer|min:1|max:100'
+            'quantity' => 'required|integer|min:1|max:100',
         ];
     }
 
@@ -23,7 +23,7 @@ class UpdateCartItemRequest extends FormRequest
         return [
             'quantity.required' => 'Quantity is required',
             'quantity.min' => 'Quantity must be at least 1',
-            'quantity.max' => 'Quantity cannot exceed 100'
+            'quantity.max' => 'Quantity cannot exceed 100',
         ];
     }
 }

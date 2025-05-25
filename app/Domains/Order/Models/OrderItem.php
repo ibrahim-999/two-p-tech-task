@@ -3,9 +3,9 @@
 namespace App\Domains\Order\Models;
 
 use App\Domains\Product\Models\Product;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class OrderItem extends Model
 {
@@ -16,11 +16,11 @@ class OrderItem extends Model
         'product_id',
         'quantity',
         'price',
-        'product_name'
+        'product_name',
     ];
 
     protected $casts = [
-        'price' => 'decimal:2'
+        'price' => 'decimal:2',
     ];
 
     public function order(): BelongsTo

@@ -24,7 +24,7 @@ class OrderCollection extends ResourceCollection
     {
         return [
             'message' => 'Orders retrieved successfully',
-            'success' => true
+            'success' => true,
         ];
     }
 }

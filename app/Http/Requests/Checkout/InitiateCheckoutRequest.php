@@ -40,7 +40,7 @@ class InitiateCheckoutRequest extends FormRequest
             'name.required' => 'Customer name is required',
             'email.required' => 'Customer email is required',
             'email.email' => 'Please provide a valid email address',
-            'shipping_email.email' => 'Please provide a valid shipping email address'
+            'shipping_email.email' => 'Please provide a valid shipping email address',
         ];
     }
 }
