@@ -5,6 +5,7 @@ namespace App\Domains\Cart\Services;
 use App\Domains\Cart\Repositories\CartRepositoryInterface;
 use App\Domains\Product\Repositories\ProductRepositoryInterface;
 use App\Traits\CommonServiceCrudTrait;
+use Illuminate\Support\Facades\DB;
 
 class CartService
 {
@@ -28,30 +29,49 @@ class CartService
 
     public function addItem($userId, $productId, $quantity)
     {
-        $product = $this->productRepository->findOrFail($productId);
+        return DB::transaction(function () use ($userId, $productId, $quantity) {
+            $product = DB::table('products')
+                ->where('id', $productId)
+                ->lockForUpdate()
+                ->first();
 
-        if (!$product->isInStock($quantity)) {
-            throw new \Exception('Product is out of stock');
-        }
+            if (!$product) {
+                throw new \Exception('Product not found');
+            }
 
-        $cart = $this->getOrCreateCart($userId);
+            if ($product->stock_quantity < $quantity) {
+                throw new \Exception('Product is out of stock');
+            }
 
-        return $this->repository->addItem($cart->id, [
-            'product_id' => $productId,
-            'quantity' => $quantity
-        ]);
+            $cart = $this->getOrCreateCart($userId);
+
+            return $this->repository->addItem($cart->id, [
+                'product_id' => $productId,
+                'quantity' => $quantity
+            ]);
+        });
     }
 
     public function updateItem($userId, $productId, $quantity)
     {
-        $cart = $this->getOrCreateCart($userId);
-        $product = $this->productRepository->findOrFail($productId);
+        return DB::transaction(function () use ($userId, $productId, $quantity) {
+            $product = DB::table('products')
+                ->where('id', $productId)
+                ->lockForUpdate()
+                ->first();
 
-        if (!$product->isInStock($quantity)) {
-            throw new \Exception('Product is out of stock');
-        }
+            if (!$product) {
+                throw new \Exception('Product not found');
+            }
 
-        return $this->repository->updateItem($cart->id, $productId, $quantity);
+            if ($product->stock_quantity < $quantity) {
+                throw new \Exception('Product is out of stock');
+            }
+
+            $cart = $this->getOrCreateCart($userId);
+
+            return $this->repository->updateItem($cart->id, $productId, $quantity);
+        });
     }
 
     public function removeItem($userId, $productId)

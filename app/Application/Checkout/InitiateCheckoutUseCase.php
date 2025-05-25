@@ -6,7 +6,6 @@ use App\Domains\Cart\Services\CartService;
 use App\Domains\Order\Models\Order;
 use App\Domains\Order\Repositories\OrderRepositoryInterface;
 use App\Domains\Payment\Factory\PaymentGatewayFactory;
-use App\Domains\Product\Repositories\ProductRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 
 class InitiateCheckoutUseCase
@@ -14,25 +13,15 @@ class InitiateCheckoutUseCase
     public function __construct(
         private CartService $cartService,
         private OrderRepositoryInterface $orderRepository,
-        private ProductRepositoryInterface $productRepository
+        private ValidateStockUseCase $validateStockUseCase
     ) {}
 
     public function execute($userId, array $customerInfo = [])
     {
         return DB::transaction(function () use ($userId, $customerInfo) {
+            $this->validateStockUseCase->execute($userId);
+
             $cart = $this->cartService->getCartContents($userId);
-
-            if ($cart->items->isEmpty()) {
-                throw new \Exception('Cart is empty');
-            }
-
-            foreach ($cart->items as $item) {
-                $product = $this->productRepository->findOrFail($item->product_id);
-
-                if (!$product->isInStock($item->quantity)) {
-                    throw new \Exception("Product '{$product->name}' is out of stock or insufficient quantity available");
-                }
-            }
 
             $orderNumber = $this->generateOrderNumber();
             $totalAmount = $cart->getTotalAmount();
@@ -58,7 +47,7 @@ class InitiateCheckoutUseCase
 
             $paymentData = [
                 'amount' => $totalAmount,
-                'currency' => config('payment.currency', 'SAR'),
+                'currency' => 'EGP',
                 'order_number' => $orderNumber,
                 'description' => "Payment for Order #{$orderNumber}",
                 'customer' => [
@@ -77,7 +66,6 @@ class InitiateCheckoutUseCase
                 throw new \Exception('Failed to create payment: ' . $paymentResult['error']);
             }
 
-            // Step 6: Update order with payment reference
             $this->orderRepository->update($order->id, [
                 'payment_reference' => $paymentResult['transaction_reference']
             ]);

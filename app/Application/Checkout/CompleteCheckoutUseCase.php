@@ -1,11 +1,10 @@
 <?php
-
 namespace App\Application\Checkout;
 
 use App\Domains\Order\Models\Order;
 use App\Domains\Order\Repositories\OrderRepositoryInterface;
 use App\Domains\Cart\Services\CartService;
-use App\Domains\Product\Repositories\ProductRepositoryInterface;
+use App\Application\Product\ReduceStockUseCase;
 use App\Domains\Payment\Factory\PaymentGatewayFactory;
 use Illuminate\Support\Facades\DB;
 
@@ -14,7 +13,7 @@ class CompleteCheckoutUseCase
     public function __construct(
         private OrderRepositoryInterface $orderRepository,
         private CartService $cartService,
-        private ProductRepositoryInterface $productRepository
+        private ReduceStockUseCase $reduceStockUseCase
     ) {}
 
     public function execute(string $paymentReference)
@@ -39,8 +38,7 @@ class CompleteCheckoutUseCase
                 ]);
 
                 foreach ($order->items as $item) {
-                    $product = $this->productRepository->findOrFail($item->product_id);
-                    $product->reduceStock($item->quantity);
+                    $this->reduceStockUseCase->execute($item->product_id, $item->quantity);
                 }
 
                 $this->cartService->clearCart($order->user_id);
