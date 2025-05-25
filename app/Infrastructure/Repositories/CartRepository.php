@@ -5,6 +5,7 @@ namespace App\Infrastructure\Repositories;
 use App\Domains\Cart\Models\Cart;
 use App\Domains\Cart\Models\CartItem;
 use App\Domains\Cart\Repositories\CartRepositoryInterface;
+use Illuminate\Support\Facades\DB;
 
 class CartRepository implements CartRepositoryInterface
 {
@@ -21,7 +22,6 @@ class CartRepository implements CartRepositoryInterface
     public function addItem($cartId, array $itemData)
     {
         return DB::transaction(function () use ($cartId, $itemData) {
-            // Lock cart items to prevent concurrent modifications
             $existingItem = CartItem::where('cart_id', $cartId)
                 ->where('product_id', $itemData['product_id'])
                 ->lockForUpdate()
